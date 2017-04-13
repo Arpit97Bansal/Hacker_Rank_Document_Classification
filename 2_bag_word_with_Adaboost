@@ -1,0 +1,226 @@
+# Enter your code here. Read input from STDIN. Print output to STDOUT
+import math
+import numpy as np
+dict = {}
+strn = []
+num = 0
+stage = 1
+D = []
+curr_stage = 0
+e_vect = []
+a=[]
+data = 0
+def make_dict():
+    f=open("trainingdata.txt","r")
+    line=f.readline()
+    num=int(line)
+    i=0
+    while(i<num):
+        D.append(100)
+        line=f.readline() 
+        temp = line.strip().split()
+        l=len(temp)
+        j=2
+        while(j<l):
+            b = temp[j]+temp[j-1]
+            if(dict.has_key(b)):
+                dict[b][int(temp[0])]=dict[b][int(temp[0])]
+            else:
+                k=0
+                dict[b] = []
+                dict[b].append(0)
+                ii=0
+                while(ii<stage):
+                    ij=0
+                    while(ij<8):
+                        dict[b].append(0.1)
+                        ij=ij+1
+                    ii=ii+1
+            j=j+1
+        i=i+1
+    f.close()
+    #print('D_l',len(D))
+    #print(strn) 
+
+    
+def train():
+    f=open("trainingdata.txt","r")
+    line=f.readline()
+    num=int(line)
+    i=0
+    while(i<num):
+        line=f.readline() 
+        temp = line.strip().split()
+        l=len(temp)
+        j=2
+        while(j<l):
+            b = temp[j]+temp[j-1]
+            dict[b][8*curr_stage+int(temp[0])]=dict[b][8*curr_stage+int(temp[0])]+D[i]
+            j=j+1
+        i=i+1
+    f.close()
+
+def predict(temp):
+    l=len(temp)
+    j=0
+    prob=[]
+    while(j<9):
+        prob.append(1)
+        j=j+1
+    j=1
+    while(j<l):
+        b = temp[j]+temp[j-1]
+        if(dict.has_key(b)):
+            total=0
+            total = sum(dict[b][8*curr_stage+1:8*curr_stage+9])
+            #print(total)
+            i=1
+            while(i<=8):
+                mul=float(dict[b][8*curr_stage+i])/float(total)
+                #print(mul)
+                prob[i]=prob[i]*mul
+                i=i+1
+            i=1
+            r=1
+            while(i<9):
+                r=r*prob[i]
+                i=i+1
+            if(r<0.0000000000001):
+                i=1
+                while(i<9):
+                    prob[i]=prob[i]*1000
+                    i=i+1 
+            #if(data==2):
+                #print(prob)
+        j=j+1
+    i=1
+    t=0
+    while(i<=8):
+        if(np.isinf(prob[i])):
+            t=i
+        i=i+1
+    if(t):
+        i=1
+        while(i<=8):
+            prob[i]=0
+            i=i+1
+        prob[t]=1
+    #if(data==2):
+     #   print(prob)
+    i=1
+    t=0
+    while(i<=8):
+        t=t+prob[i]
+        i=i+1
+    i=1
+    #print(prob)
+    while(i<=8):
+        prob[i]=prob[i]/t
+        i=i+1
+    return(prob)
+
+def get_ready(error):
+    a1=(1-error)/error
+    #print(a1)
+    a1=(0.5)*math.log(a1)
+    #print(error)
+    #print(a1)
+    a.append(a1)
+    z=2*math.sqrt(error*(1-error))
+    pos = math.exp(-1*a1)/z
+    neg = math.exp(a1)/z
+    i=0
+    while(i<len(e_vect)):
+        if(e_vect[i]):
+            D[i]=D[i]*neg
+        else:
+            D[i]=D[i]*pos
+        i=i+1
+        
+def next_stage_prep():
+    f=open("trainingdata.txt","r")
+    line=f.readline()
+    num=int(line)
+    i=0
+    e_vect = []
+    while(i<num):
+        line=f.readline() 
+        temp = line.strip().split() 
+        won = int(temp[0])
+        temp = temp[1:]
+        pwon = predict(temp)
+        max1=pwon[1]
+        ind=1
+        j=2
+        while(j<=8):
+            if(pwon[j]>max1):
+                max1=pwon[j]
+                ind=j
+            j=j+1
+        if(ind!=won):
+            e_vect.append(1)
+        else:
+            e_vect.append(0)
+        i=i+1
+    f.close()
+    i=0
+    e=0
+    total=0
+    #print(e_vect)
+    #print('D',len(D))
+    #print('e_vect',len(e_vect))
+    while(i<len(e_vect)):
+        if(e_vect[i]):
+            e=e + D[i]
+        total=total+D[i]
+        i=i+1
+    #print(e)
+    #print(total)
+    er = float(e)/float(total)
+    #print(er)
+    get_ready(er)
+        
+if __name__ == '__main__':
+    
+    make_dict()
+    stage = 1
+    curr_stage = 0
+    while(curr_stage<stage):
+        train()
+        next_stage_prep()
+        curr_stage=curr_stage+1
+    k = raw_input()
+    k = int(k)
+    for data in range(k):
+        temp = raw_input().strip().split()
+        
+        hx=[]
+        i=0
+        while(i<9):
+            hx.append(0)
+            i=i+1
+            
+        curr_stage = 0
+        while(curr_stage<stage):
+            prob = []
+            prob = predict(temp)
+            i=1
+            #print(prob)
+            while(i<=8):
+                hx[i]=hx[i]+prob[i]*a[curr_stage]
+                i=i+1
+            curr_stage=curr_stage+1
+        #print(a)
+        #print(hx)
+        max1=hx[1]
+        ind=1
+        j=2
+        while(j<=8):
+            if(hx[j]>max1):
+                max1=hx[j]
+                ind=j
+            j=j+1
+        print(ind)
+            
+                
+        
