@@ -1,0 +1,149 @@
+# Enter your code here. Read input from STDIN. Print output to STDOUT
+import numpy as np
+dict = {}
+strn = []
+count = [0 for _ in xrange(9)]
+def classify():
+    f=open("trainingdata.txt","r")
+    line=f.readline()
+    num=int(line)
+    i=0
+    while(i<num):
+        line=f.readline() 
+        temp = line.strip().split()
+        l=len(temp)
+        count[int(temp[0])]=count[int(temp[0])]+l
+        j=1
+        while(j<l):
+            if(dict.has_key(temp[j])):
+                dict[temp[j]][int(temp[0])]=dict[temp[j]][int(temp[0])]+1
+            else:
+                k=0
+                dict[temp[j]] = []
+                strn.append(temp[j])
+                dict[temp[j]].append(0)
+                while(k<9):
+                    dict[temp[j]].append(0.1)
+                    count[k]=count[k]
+                    k=k+1   
+                dict[temp[j]][int(temp[0])]=1
+                count[int(temp[0])]=count[int(temp[0])]
+            j=j+1
+        
+        i=i+1
+    f.close()
+    #print(strn) 
+        
+        
+if __name__ == '__main__':
+    classify()
+    #print(dict['vs'])
+    k = raw_input()
+    k = int(k)
+    #print(k)
+    tot = 0
+    i=1
+    while(i<9):
+        tot=count[i]+tot
+        i=i+1
+    
+    for data in range(k):
+        prob = []
+        prob.append(1)
+        j=1
+        while(j<9):
+            prob.append(float(count[j])/float(tot))
+            j=j+1
+        #print(prob)
+        temp = raw_input().strip().split()
+        l = len(temp)
+        #print(dict[temp[2]][0])
+        j=0
+        while(j<l):
+            if(dict.has_key(temp[j])):
+                i=1
+                r=1
+                while(i<9):
+                    r=r*prob[i]
+                    i=i+1
+                if(r<0.00000001):
+                    i=1
+                    while(i<9):
+                        prob[i]=prob[i]*1000
+                        i=i+1
+                
+                i=1
+                while(i<9):
+                    prob[i]=prob[i]*(float(dict[temp[j]][i])/count[i])
+                    i=i+1
+            #print(prob[1])
+            j=j+1      
+        #print(prob)  
+        total=0
+        j=1
+        while(j<=8):
+            if(np.isinf(prob[j])):
+                total=j
+            j=j+1
+        if(total):
+            j=1
+            while(j<=8):
+                prob[j]=0
+                j=j+1
+            prob[total]=1
+        total=0
+        j=1
+        while(j<=8):
+            total = total + prob[j]
+            j=j+1
+        j=1
+        while(j<=8):
+            prob[j] = prob[j]/total
+            j=j+1
+        #print(prob)
+        j=2
+        maxi=prob[1]
+        max_i=1
+        while(j<9):
+            if(prob[j]>maxi):
+                maxi=prob[j]
+                max_i=j
+            j=j+1
+        print(max_i)
+        #..........
+        if(0):
+            i=1
+            while(i<=8):
+                count[i]=count[i]+prob[i]
+                i=i+1
+        else:
+            count[max_i]=count[max_i]+prob[max_i]
+        
+        j=0
+        while(j<l):
+            if(dict.has_key(temp[j])):
+                if(0):
+                    i=1
+                    while(i<=8):
+                        dict[temp[j]][i]=dict[temp[j]][i]+prob[i]
+                        i=i+1
+                else:
+                    dict[temp[j]][max_i]=dict[temp[j]][max_i]+prob[max_i]
+            else:
+                if(l>900):
+                    dict[temp[j]]=[]
+                    dict[temp[j]].append(0)
+                    i=1
+                    while(i<=8):
+                        dict[temp[j]].append(0)
+                        i=i+1
+                    dict[temp[j]][max_i]=dict[temp[j]][max_i]+prob[max_i]
+                    #print(dict[temp[j]])
+            #print(prob[1])
+            j=j+1  
+        
+        #.....
+        
+            
+                
+        
