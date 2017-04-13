@@ -1,0 +1,78 @@
+# Enter your code here. Read input from STDIN. Print output to STDOUT
+dict = {}
+strn = []
+count = [1 for _ in xrange(9)]
+def classify():
+    f=open("trainingdata.txt","r")
+    line=f.readline()
+    num=int(line)
+    i=0
+    while(i<num):
+        line=f.readline() 
+        temp = line.strip().split()
+        l=len(temp)
+        count[int(temp[0])]=count[int(temp[0])]+l
+        j=1
+        while(j<l):
+            if(dict.has_key(temp[j])):
+                dict[temp[j]][int(temp[0])]=dict[temp[j]][int(temp[0])]+1
+            else:
+                k=0
+                dict[temp[j]] = []
+                strn.append(temp[j])
+                dict[temp[j]].append(0)
+                while(k<9):
+                    dict[temp[j]].append(0.01)
+                    count[k]=count[k]
+                    k=k+1   
+                dict[temp[j]][int(temp[0])]=1
+            j=j+1
+        i=i+1
+    f.close()
+    #print(strn) 
+        
+        
+if __name__ == '__main__':
+    classify()
+    #print(dict['vs'])
+    k = raw_input()
+    k = int(k)
+    #print(k)
+    for data in range(k):
+        prob = []
+        prob = [1 for _ in xrange(9)]
+        temp = raw_input().strip().split()
+        l = len(temp)
+        #print(dict[temp[2]][0])
+        j=0
+        while(j<l):
+            if(dict.has_key(temp[j])):
+                i=1
+                r=1
+                while(i<9):
+                    r=r*prob[i]
+                    i=i+1
+                if(r<0.000000000000000001):
+                    i=1
+                    while(i<9):
+                        prob[i]=prob[i]*1000
+                        i=i+1
+                i=1
+                while(i<9):
+                    prob[i]=prob[i]*(float(dict[temp[j]][i])/count[i])
+                    i=i+1
+            #print(prob[1])
+            j=j+1    
+        #print(prob)  
+        j=2
+        maxi=prob[1]
+        max_i=1
+        while(j<9):
+            if(prob[j]>maxi):
+                maxi=prob[j]
+                max_i=j
+            j=j+1
+        print(max_i)
+            
+                
+        
